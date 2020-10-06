@@ -11,3 +11,6 @@ Nginx: Latest
 ***Bash user for php-fpm container:***\
 user: dev\
 example: sudo docker-compose exec --user=dev php-fpm bash
+
+***Notes***\
+- The PHP-FPM contains: Node.js, NPM, Composer 
