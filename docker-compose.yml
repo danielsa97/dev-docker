@@ -1,0 +1,70 @@
+version: "2"
+services:
+
+    mysql:
+      image: mysql:5.6
+      container_name: dev-docker-mysql
+      restart: always
+      volumes:
+        - ..:/var/www
+      environment:
+        - MYSQL_ROOT_PASSWORD=root
+        - MYSQL_DATABASE=dev
+        - MYSQL_USER=root
+        - MYSQL_PASSWORD=root
+      tty: true
+      ports:
+        - 3306:3306
+      networks:
+        - dev-network
+
+    postgres:
+      image: postgres:11.1-alpine
+      container_name: dev-docker-postgres
+      restart: always
+      volumes:
+        - ..:/var/www
+      environment:
+        - POSTGRES_ROOT_PASSWORD=root  
+        - POSTGRES_DATABASE=dev        
+        - POSTGRES_USER=root
+        - POSTGRES_PASSWORD=root        
+      tty: true
+      ports:
+        - 5432:5432
+      networks:
+        - dev-network
+
+    nginx:
+      build: ./nginx
+      image: nginx:alpine
+      container_name: dev-docker-nginx
+      volumes:
+       - ..:/var/www
+       - ./nginx/sites/:/etc/nginx/conf.d/
+       - "/etc/timezone:/etc/timezone:ro"
+       - "/etc/localtime:/etc/localtime:ro"
+      depends_on:
+       - php-fpm
+      ports:
+       - 80:80
+      networks:
+       - dev-network
+
+    php-fpm:
+      build: 
+        context: ./php-fpm
+        args:
+          - USER_UID=${USER_UID}
+          - USER_GID=${USER_GID}
+      container_name: dev-docker-php-fpm
+      restart: always
+      volumes:
+        - ..:/var/www
+        - ./php-fpm/php-ini-overrides.ini:/etc/php/7.3/fpm/conf.d/99-overrides.ini
+      networks:
+        - dev-network
+
+networks: 
+  dev-network:
+    driver: bridge
