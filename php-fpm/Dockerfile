@@ -1,4 +1,4 @@
-FROM phpdockerio/php73-fpm:latest
+FROM php:7.2-fpm
 WORKDIR "/var/www"
 
 ARG PUID=1000
@@ -8,6 +8,17 @@ ENV PGID ${PGID}
 RUN groupadd -g ${PGID} dev && \
 useradd -u ${PUID} -g dev -m dev && \
 usermod -p "*" dev
+
+
+RUN ldconfig
+
+RUN apt-get update && apt install -y openssl bash libxml2-dev postgresql-client libpq-dev libpng-dev libaio1
+
+RUN docker-php-ext-install zip
+
+RUN docker-php-ext-install pdo pdo_mysql pdo_pgsql soap gd
+
+RUN docker-php-ext-install exif
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash
 
@@ -19,11 +30,13 @@ RUN apt-get update && apt-get install -y nano
 
 RUN apt-get update && apt-get install -y net-tools
 
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash
 
-# Fix debconf warnings upon build
-ARG DEBIAN_FRONTEND=noninteractive
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Install selected extensions and other stuff
-RUN apt-get update \
-    && apt-get -y --no-install-recommends install  php7.3-mysql php7.3-pgsql \
-    && apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+RUN rm -rf /var/www/html
+
+RUN apt-get update && apt-get install -y libxrender-dev libfontconfig
+
+COPY ./php-ini-overrides.ini /usr/local/etc/php/conf.d
+
