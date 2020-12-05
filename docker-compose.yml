@@ -39,6 +39,7 @@ services:
       build: ./nginx
       image: nginx:alpine
       container_name: dev-docker-nginx
+      restart: always
       volumes:
        - ..:/var/www
        - ./nginx/sites/:/etc/nginx/conf.d/
